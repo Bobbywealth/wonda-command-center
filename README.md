@@ -37,12 +37,12 @@ npm run db:migrate    # apply schema
 npm run db:seed       # seed users, projects, mentees, catalog
 ```
 
-Seeded logins:
+Seeded logins (mock-mode, no Postgres):
 - Owner — `jerry@wolfpaqmarketing.com` / `wonda2026!`
-- Assistant — `sarah@wolfpaqmarketing.com` / `wonda-assistant`
-- Finance Manager — `david@wolfpaqmarketing.com` / `wonda-finance`
+- Assistant — `sarah@wolfpaqmarketing.com` / `wonda2026!`
+- Finance Manager — `david@wolfpaqmarketing.com` / `wonda2026!`
 
-**Change seeded passwords before deploying to production.**
+> **Mock-mode auth** — when `DATABASE_URL` is not set, the server accepts these passwords in plaintext so the UI is testable without a database. When Postgres is wired, the same endpoint switches to `bcrypt.compare()` against the `password_hash` column, and these plaintext mock passwords no longer work.
 
 ## Deploy to Render
 
