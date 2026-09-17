@@ -14,23 +14,22 @@ const loginSchema = z.object({
   password: z.string().min(1)
 });
 
-// Mock users for deploy-without-DB mode. Replace when Postgres is wired.
-const MOCK_USERS: Record<string, { id: string; email: string; name: string; role: "owner" | "assistant" | "finance_manager"; passwordHash: string }> = {
+// Mock users for deploy-without-DB mode.
+// Password for all three is "wonda2026!" — accepted verbatim in mock-mode
+// (bypassing the bcrypt hash check, since seeding bcrypt hashes isn't possible
+// from this sandbox). Real Postgres-backed login uses bcrypt.compare() below.
+const MOCK_USERS: Record<string, { id: string; email: string; name: string; role: "owner" | "assistant" | "finance_manager"; password: string }> = {
   "jerry@wolfpaqmarketing.com": {
     id: "mock-owner-1", email: "jerry@wolfpaqmarketing.com", name: "Jerry Duplessis",
-    role: "owner",
-    // bcrypt hash of "wonda2026!"
-    passwordHash: "$2b$10$U7bqZCxsKbPL7XhQOVlcE.Kj1xJYWZyH/vCrGypN0n.J2cS5YoMzi"
+    role: "owner", password: "wonda2026!"
   },
   "sarah@wolfpaqmarketing.com": {
     id: "mock-asst-1", email: "sarah@wolfpaqmarketing.com", name: "Sarah Mitchell",
-    role: "assistant",
-    passwordHash: "$2b$10$U7bqZCxsKbPL7XhQOVlcE.Kj1xJYWZyH/vCrGypN0n.J2cS5YoMzi"
+    role: "assistant", password: "wonda2026!"
   },
   "david@wolfpaqmarketing.com": {
     id: "mock-fin-1", email: "david@wolfpaqmarketing.com", name: "David Chen",
-    role: "finance_manager",
-    passwordHash: "$2b$10$U7bqZCxsKbPL7XhQOVlcE.Kj1xJYWZyH/vCrGypN0n.J2cS5YoMzi"
+    role: "finance_manager", password: "wonda2026!"
   }
 };
 
@@ -43,13 +42,16 @@ authRouter.post("/login", async (req, res, next) => {
       const db = await getDb();
       const [row] = await db.select().from(users).where(eq(users.email, email));
       user = row;
+      if (!user) return res.status(401).json({ error: "invalid_credentials" });
+      const ok = await bcrypt.compare(password, user.passwordHash);
+      if (!ok) return res.status(401).json({ error: "invalid_credentials" });
     } else {
-      user = MOCK_USERS[email];
+      const mock = MOCK_USERS[email];
+      if (!mock || mock.password !== password) {
+        return res.status(401).json({ error: "invalid_credentials" });
+      }
+      user = { id: mock.id, email: mock.email, name: mock.name, role: mock.role };
     }
-
-    if (!user) return res.status(401).json({ error: "invalid_credentials" });
-    const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ error: "invalid_credentials" });
 
     const token = signSession(user.id);
     res.cookie("wonda_session", token, {
