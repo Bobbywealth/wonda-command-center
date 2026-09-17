@@ -1,16 +1,31 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { Card, PageHeader, SectionHeader } from "../components/Section";
+
+interface FinanceUnit {
+  unit: string;
+  kind: "commercial" | "nonprofit";
+  revenue?: number;
+  expenses?: number;
+  net?: number;
+  margin?: number;
+  fundsIn?: number;
+  programSpend?: number;
+  balance?: number;
+}
 
 interface FinanceData {
   period: { start: string; end: string };
   kpis: { revenue: number; expenses: number; netProfit: number; marginPct: number };
   deltas: { revenue: number; expenses: number; netProfit: number; marginPct: number };
-  byUnit: Array<{ unit: string; revenue?: number; expenses?: number; net?: number; margin?: number; fundsIn?: number; programSpend?: number; balance?: number; kind: string }>;
+  byUnit: FinanceUnit[];
   cash: { invoiced: number; collected: number; outstanding: number; overdue: number };
 }
 
 const TABS = ["Dashboard","Invoices","Expenses","Budgets","Royalties","Studio Revenue"] as const;
+
+const fmt = (n: number | undefined) => `$${(n ?? 0).toLocaleString()}`;
 
 export function Finance() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Dashboard");
@@ -31,7 +46,6 @@ export function Finance() {
 
       {data && tab === "Dashboard" && (
         <>
-          {/* Headline KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <Card accent>
               <div className="text-[10px] tracking-[0.2em] text-ink-lo uppercase mb-2">Revenue</div>
@@ -55,48 +69,54 @@ export function Finance() {
             </Card>
           </div>
 
-          {/* P&L by unit */}
           <SectionHeader title="P&L by Business Unit" />
           <Card className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-[10px] tracking-[0.2em] text-ink-lo uppercase">
-                <tr><th className="text-left py-2 pr-2">Unit</th>
-                  {data.byUnit[0].kind === "commercial" && <>
-                    <th className="text-right py-2 px-2">Revenue</th>
-                    <th className="text-right py-2 px-2">Expenses</th>
-                    <th className="text-right py-2 px-2">Net</th>
-                    <th className="text-right py-2 pl-2">Margin</th>
-                  </>}
-                  {data.byUnit[0].kind === "nonprofit" && <>
-                    <th className="text-right py-2 px-2">Funds In</th>
-                    <th className="text-right py-2 px-2">Program Spend</th>
-                    <th className="text-right py-2 pl-2">Balance</th>
-                  </>}
+                <tr>
+                  <th className="text-left py-2 pr-2">Unit</th>
+                  {data.byUnit[0]?.kind === "commercial" ? (
+                    <>
+                      <th className="text-right py-2 px-2">Revenue</th>
+                      <th className="text-right py-2 px-2">Expenses</th>
+                      <th className="text-right py-2 px-2">Net</th>
+                      <th className="text-right py-2 pl-2">Margin</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="text-right py-2 px-2">Funds In</th>
+                      <th className="text-right py-2 px-2">Program Spend</th>
+                      <th className="text-right py-2 pl-2">Balance</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {data.byUnit.map(u => (
                   <tr key={u.unit} className="border-t border-line/40">
                     <td className="py-2 pr-2">{u.unit}</td>
-                    {u.kind === "commercial" ? <>
-                      <td className="text-right nums py-2 px-2">${(u.revenue!/==undefined?u.revenue!:0).toLocaleString()}</td>
-                      <td className="text-right nums py-2 px-2">${(u.expenses!==undefined?u.expenses!:0).toLocaleString()}</td>
-                      <td className="text-right nums py-2 px-2 text-gold">${(u.net!==undefined?u.net!:0).toLocaleString()}</td>
-                      <td className="text-right nums py-2 pl-2">{u.margin!==undefined?u.margin:0}%</td>
-                    </> : <>
-                      <td className="text-right nums py-2 px-2">${(u.fundsIn!==undefined?u.fundsIn!:0).toLocaleString()}</td>
-                      <td className="text-right nums py-2 px-2">${(u.programSpend!==undefined?u.programSpend!:0).toLocaleString()}</td>
-                      <td className={`text-right nums py-2 pl-2 ${(u.balance!==undefined?u.balance:0) < 0 ? "text-rose" : "text-emerald"}`}>
-                        ${(u.balance!==undefined?u.balance!:0).toLocaleString()}
-                      </td>
-                    </>}
+                    {u.kind === "commercial" ? (
+                      <>
+                        <td className="text-right nums py-2 px-2">{fmt(u.revenue)}</td>
+                        <td className="text-right nums py-2 px-2">{fmt(u.expenses)}</td>
+                        <td className="text-right nums py-2 px-2 text-gold">{fmt(u.net)}</td>
+                        <td className="text-right nums py-2 pl-2">{u.margin ?? 0}%</td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="text-right nums py-2 px-2">{fmt(u.fundsIn)}</td>
+                        <td className="text-right nums py-2 px-2">{fmt(u.programSpend)}</td>
+                        <td className={`text-right nums py-2 pl-2 ${(u.balance ?? 0) < 0 ? "text-rose" : "text-emerald"}`}>
+                          {fmt(u.balance)}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
             </table>
           </Card>
 
-          {/* Chart */}
           <div className="mt-6">
             <SectionHeader title="Revenue vs Expenses" subtitle="Last 12 months" />
             <Card>
