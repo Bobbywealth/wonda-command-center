@@ -2,7 +2,6 @@
   "name": "wonda-command-center",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "engines": { "node": ">=20.0.0" },
   "scripts": {
     "dev": "concurrently -n web,api -c blue,green \"vite\" \"tsx watch server/index.ts\"",
@@ -14,7 +13,6 @@
     "build:ci": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "start": "node dist/server/index.cjs",
-    "build:server": "esbuild server/index.prod.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/server/index.js --external:pg --external:bcrypt --external:googleapis",
     "db:migrate": "tsx server/db/migrate.ts",
     "db:seed": "tsx server/db/seed.ts",
     "lint": "eslint . --ext .ts,.tsx"
