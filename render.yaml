@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: wonda-command-center
+    runtime: node
+    plan: free
+    region: free
+    rootDir: .
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: TOKEN_ENCRYPTION_KEY
+        generateValue: true
+      - key: APP_BASE_URL
+        value: https://wonda-command-center.onrender.com
+      - key: NODE_ENV
+        value: production
+      # DATABASE_URL — added in Phase 7 when Postgres is provisioned
+      # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REDIRECT_URI — added when Calendar OAuth is wired in Phase 5

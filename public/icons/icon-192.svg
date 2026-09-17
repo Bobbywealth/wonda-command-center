@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="42" fill="#0B0B0F"/>
+  <g fill="#D4A544">
+    <text x="96" y="92" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="700" font-size="22">W</text>
+    <text x="96" y="128" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-weight="700" font-size="22">C</text>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- JERRY WONDA wordmark — adapted from jerrywonda.com/jerry-logo.png -->
+<!-- Original white-on-transparent raster; recreated as clean vector wordmark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 257 92" fill="currentColor">
+  <g font-family="Sora, system-ui, sans-serif" font-weight="700" letter-spacing="2">
+    <text x="0" y="42" font-size="34">JERRY</text>
+    <text x="0" y="80" font-size="34">WONDA</text>
+    <circle cx="566" cy="0" r="0" fill="none"/>
+  </g>
+</svg>
