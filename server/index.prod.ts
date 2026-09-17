@@ -3,8 +3,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { env } from "./env.js";
+import { env, dbConfigured } from "./env.js";
 import { authRouter } from "./routes/auth.js";
 import { projectsRouter } from "./routes/projects.js";
 import { tasksRouter } from "./routes/tasks.js";
@@ -16,10 +15,22 @@ import { teamRouter } from "./routes/team.js";
 import { overviewRouter } from "./routes/overview.js";
 import { settingsRouter } from "./routes/settings.js";
 import { errorHandler } from "./middleware/error.js";
-import { dbConfigured } from "./env.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const webDir = path.join(__dirname, "../web");
+// Under tsx (ESM dev), __dirname is not defined — use import.meta.url.
+// Under esbuild CJS bundle, __dirname is provided directly.
+const __dirname_safe: string = (() => {
+  // @ts-ignore — __dirname exists in CJS context
+  if (typeof __dirname !== "undefined") return __dirname;
+  // ESM context (dev): derive from import.meta.url
+  try {
+    const url = new URL(import.meta.url);
+    return path.dirname(url.pathname);
+  } catch {
+    return process.cwd();
+  }
+})();
+
+const webDir = path.join(__dirname_safe, "../web");
 
 const app = express();
 app.disable("x-powered-by");
@@ -56,6 +67,8 @@ app.use("/api/settings", settingsRouter);
 
 app.use(express.static(webDir, { maxAge: "1y", immutable: true, index: false }));
 app.get("*", (_req, res) => res.sendFile(path.join(webDir, "index.html")));
+
+export { webDir, __dirname_safe };
 
 app.use(errorHandler);
 
